@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SqlToGraphiteInterfaces</id>
+    <version>0.3.0</version>
+    <authors>Owain Perry</authors>
+    <owners>Owain Perry</owners>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0.html</licenseUrl>
+    <projectUrl>https://github.com/perryofpeek/SqlToGraphite</projectUrl>    
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Contains the interfaces to write a SqlToGraphite plugin</description>
+    <releaseNotes>none.</releaseNotes>
+    <copyright>Copyright PerryOfPeek 2012</copyright>
+    <tags>SqlToGraphite Graphite SqlToGraphiteInterfaces</tags>
+    <dependencies>
+      <dependency id="log4net" version="2.0.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="*.dll" target="lib\net40" />
+  </files>
+</package>

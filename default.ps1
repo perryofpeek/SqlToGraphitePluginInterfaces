@@ -1,7 +1,4 @@
 properties {
-  $testMessage = 'Executed Test!'
-  $compileMessage = 'Executed Compile!'
-  $cleanMessage = 'Executed Clean!'
   $Build_Solution = 'SqlToGraphiteInterfaces.sln'
   $Build_Configuration = 'Release'
   $Build_Artifacts = 'output'
@@ -11,14 +8,14 @@ properties {
   $pwd = pwd
   $msbuild = "C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
   $nunit =  "$pwd\packages\NUnit.Runners.2.6.2\tools\nunit-console-x86.exe"
-  #$openCover = "$pwd\packages\OpenCover.4.0.804\OpenCover.Console.exe"
-  #$reportGenerator = "$pwd\packages\ReportGenerator.1.6.1.0\ReportGenerator.exe"
+  $openCover = "$pwd\packages\OpenCover.4.0.804\OpenCover.Console.exe"
+  $reportGenerator = "$pwd\packages\ReportGenerator.1.7.1.0\ReportGenerator.exe"
   $TestOutput = "$pwd\BuildOutput"
   $UnitTestOutputFolder = "$TestOutput\UnitTestOutput";
   $TestReport = "";
 }
 
-task default -depends Init, Clean, Compile
+task default -depends Init, Clean, Compile, Test, Package , Report
 
 task Test { 			
 	$sinkoutput = mkdir $TestOutput -Verbose:$false;  
@@ -36,11 +33,24 @@ task Test {
 	{
 		$files = $files + " " + $file.Name
 	}
-	#write-host $files
-	#write-host " $openCover -target:$nunit -filter:+[SqlToGraphite*]* -register:user -mergebyhash -targetargs:$files /err=err.nunit.txt /noshadow /nologo /config=SqlToGraphite.UnitTests.dll.config"
+	write-host $files
+	write-host " $openCover -target:$nunit -filter:+[SqlToGraphite*]* -register:user -mergebyhash -targetargs:$files /err=err.nunit.txt /noshadow /nologo /config=SqlToGraphite.UnitTests.dll.config"
+	write-host  "unit test"
 	Exec { & $openCover "-target:$nunit" "-filter:-[.*test*]* +[SqlToGraphite*]* " -register:user -mergebyhash "-targetargs:$files /err=err.nunit.txt /noshadow /nologo /config=SqlToGraphite.UnitTests.dll.config" } 
+	
 	Exec { & $reportGenerator "-reports:results.xml" "-targetdir:..\report" "-verbosity:Error" "-reporttypes:Html;HtmlSummary;XmlSummary"}	
 	cd $pwd	
+}
+
+task Package {
+    if ((Test-path -path $Build_Artifacts -pathtype container) -eq $false)
+	{		
+		mkdir $Build_Artifacts
+	}
+	
+	Copy-item .\src\SqlToGraphiteInterfaces\output\SqlToGraphiteInterfaces.dll $Build_Artifacts\
+	Copy-item SqlToGraphiteInterfaces.nuspec $Build_Artifacts\
+	Exec { .\packages\NuGet.CommandLine.1.7.0\tools\NuGet.exe Pack -BasePath $Build_Artifacts -outputdirectory .}
 }
 
 task Compile {  
@@ -84,7 +94,7 @@ task Init {
 
 
 
-task Report -depends package {
+task Report  {
 	write-host "================================================================="	
 	$xmldata = [xml](get-content BuildOutput\UnitTestOutput\testresult.xml)
 	
